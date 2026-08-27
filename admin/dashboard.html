@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>관리자 대시보드</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+  <main class="wrap wrap-wide">
+    <header class="page-head">
+      <div>
+        <h1>관리자 대시보드</h1>
+        <p class="sub" id="adminInfo">확인 중…</p>
+      </div>
+      <div class="btn-row">
+        <a class="btn btn-ghost btn-sm" id="adminResultLink" href="../result.html" target="_blank" rel="noopener">결과 페이지</a>
+        <button type="button" class="btn btn-ghost btn-sm" id="logoutBtn">로그아웃</button>
+      </div>
+    </header>
+
+    <div class="alert" id="globalAlert" hidden></div>
+
+    <section class="poll-context card-compact">
+      <label for="pollSelect">현재 관리 중인 투표</label>
+      <select id="pollSelect"></select>
+      <span class="badge" id="pollModeBadge">-</span>
+    </section>
+
+    <nav class="tabs" id="tabs">
+      <button type="button" class="tab" data-panel="polls">투표 관리</button>
+      <button type="button" class="tab active" data-panel="overview">집계</button>
+      <button type="button" class="tab" data-panel="candidates">후보 관리</button>
+      <button type="button" class="tab" data-panel="codes">투표 코드</button>
+      <button type="button" class="tab" data-panel="settings">설정</button>
+      <button type="button" class="tab" data-panel="audit">작업 로그</button>
+    </nav>
+
+    <!-- ========== 투표 관리 ========== -->
+    <section class="panel" id="panel-polls" hidden>
+      <div class="card">
+        <h2>새 투표 만들기</h2>
+        <p class="hint">각 투표마다 후보, 코드 사용 여부, 진행 상태와 결과 공개를 따로 관리합니다.</p>
+        <form id="pollForm" autocomplete="off">
+          <div class="field">
+            <label for="pollTitle">투표 제목</label>
+            <input type="text" id="pollTitle" maxlength="100" required />
+          </div>
+          <div class="field">
+            <label for="pollDescription">설명 (선택)</label>
+            <textarea id="pollDescription" maxlength="500" rows="3"></textarea>
+          </div>
+          <div class="field">
+            <label class="checkline">
+              <input type="checkbox" id="pollRequireCode" checked />
+              <span>1회용 투표 코드 사용</span>
+            </label>
+          </div>
+          <button type="submit" class="btn" id="pollSubmit">투표 만들기</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <h2 style="margin:0">투표 목록</h2>
+          <span class="grow"></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="pollRefresh">새로고침</button>
+        </div>
+        <div class="admin-poll-list" id="adminPollList"></div>
+        <div class="empty" id="pollEmpty" hidden>등록된 투표가 없습니다.</div>
+      </div>
+    </section>
+
+    <!-- ========== 집계 ========== -->
+    <section class="panel" id="panel-overview">
+      <div class="card">
+        <div class="stat-grid" style="margin-bottom: 22px;">
+          <div class="stat">
+            <div class="s-label">총 투표수</div>
+            <div class="s-value" id="ovTotal">-</div>
+          </div>
+          <div class="stat">
+            <div class="s-label">발급 코드</div>
+            <div class="s-value" id="ovCodesTotal">-</div>
+          </div>
+          <div class="stat">
+            <div class="s-label">사용 코드</div>
+            <div class="s-value" id="ovCodesUsed">-</div>
+          </div>
+          <div class="stat">
+            <div class="s-label">미사용 코드</div>
+            <div class="s-value" id="ovCodesLeft">-</div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <span class="badge" id="ovVoteState">-</span>
+          <span class="badge" id="ovResultState">-</span>
+          <span class="grow"></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="ovRefresh">새로고침</button>
+        </div>
+
+        <div class="result-list" id="ovList"></div>
+      </div>
+
+    </section>
+
+    <!-- ========== 후보 관리 ========== -->
+    <section class="panel" id="panel-candidates" hidden>
+      <div class="card">
+        <h2>후보 추가</h2>
+        <p class="hint">후보명은 필수이며, 설명은 투표 화면에 함께 표시됩니다.</p>
+        <form id="candidateForm" autocomplete="off">
+          <div class="field">
+            <label for="candName">후보명</label>
+            <input type="text" id="candName" maxlength="80" required />
+          </div>
+          <div class="field">
+            <label for="candDesc">설명 (선택)</label>
+            <textarea id="candDesc" maxlength="500" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn" id="candSubmit">후보 추가</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <h2 class="mb-0" style="margin:0">후보 목록</h2>
+          <span class="grow"></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="candRefresh">새로고침</button>
+        </div>
+        <div class="table-scroll">
+          <table class="data">
+            <thead>
+              <tr>
+                <th style="width:56px">ID</th>
+                <th>후보명 / 설명</th>
+                <th style="width:80px">득표</th>
+                <th style="width:90px">상태</th>
+                <th style="width:150px">관리</th>
+              </tr>
+            </thead>
+            <tbody id="candTbody"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="candEmpty" hidden>등록된 후보가 없습니다.</div>
+      </div>
+    </section>
+
+    <!-- ========== 투표 코드 ========== -->
+    <section class="panel" id="panel-codes" hidden>
+      <div class="alert alert-warn" id="codeModeNotice" hidden>
+        현재 투표는 코드를 사용하지 않습니다. 설정에서 코드 사용을 켜야 코드를 발급할 수 있습니다.
+      </div>
+      <div class="card" id="codeIssueCard">
+        <h2>투표 코드 발급</h2>
+        <p class="hint">한 번에 최대 500개까지 생성할 수 있습니다. 생성된 코드는 아래에서 복사해 배포하세요.</p>
+        <form id="codeForm" autocomplete="off">
+          <div class="toolbar">
+            <div class="field grow mb-0" style="margin-bottom:0">
+              <label for="codeCount">생성 개수</label>
+              <input type="number" id="codeCount" min="1" max="500" value="20" required />
+            </div>
+            <div class="field grow mb-0" style="margin-bottom:0">
+              <label for="codeLength">코드 길이</label>
+              <input type="number" id="codeLength" min="4" max="12" value="6" required />
+            </div>
+            <div style="align-self:flex-end">
+              <button type="submit" class="btn" id="codeSubmit">발급</button>
+            </div>
+          </div>
+        </form>
+
+        <div id="codeResultBox" hidden>
+          <div class="divider"></div>
+          <div class="toolbar">
+            <b id="codeResultLabel">방금 생성된 코드</b>
+            <span class="grow"></span>
+            <button type="button" class="btn btn-ghost btn-sm" id="copyCodesBtn">복사</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="downloadCodesBtn">CSV 저장</button>
+          </div>
+          <div class="code-block" id="codeResult"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <h2 class="mb-0" style="margin:0">코드 사용 현황</h2>
+          <input type="search" id="codeSearch" class="grow" placeholder="코드 검색" />
+          <select id="codeFilter" style="width:auto">
+            <option value="all">전체</option>
+            <option value="unused">미사용</option>
+            <option value="used">사용됨</option>
+          </select>
+          <button type="button" class="btn btn-ghost btn-sm" id="codeRefresh">새로고침</button>
+        </div>
+        <div class="table-scroll">
+          <table class="data">
+            <thead>
+              <tr>
+                <th style="width:130px">코드</th>
+                <th style="width:90px">상태</th>
+                <th style="width:170px">사용 시각</th>
+                <th>선택 후보</th>
+              </tr>
+            </thead>
+            <tbody id="codeTbody"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="codeEmpty" hidden>표시할 코드가 없습니다.</div>
+      </div>
+    </section>
+
+    <!-- ========== 설정 ========== -->
+    <section class="panel" id="panel-settings" hidden>
+      <div class="card">
+        <h2>투표 설정</h2>
+        <p class="hint">투표 제목은 사용자 화면과 결과 화면 상단에 표시됩니다.</p>
+
+        <div class="field">
+          <label for="setTitle">투표 제목</label>
+          <input type="text" id="setTitle" maxlength="100" />
+        </div>
+
+        <div class="field">
+          <label for="setDescription">투표 설명</label>
+          <textarea id="setDescription" maxlength="500" rows="3"></textarea>
+        </div>
+
+        <div class="field">
+          <label class="checkline">
+            <input type="checkbox" id="setOpen" />
+            <span>투표 진행 (끄면 사용자 화면에서 투표할 수 없습니다)</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label class="checkline">
+            <input type="checkbox" id="setShowResult" />
+            <span>결과 공개 (끄면 결과 페이지가 비공개로 표시됩니다)</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label class="checkline">
+            <input type="checkbox" id="setRequireCode" />
+            <span>1회용 투표 코드 사용 (끄면 반복 투표를 허용합니다)</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label class="checkline">
+            <input type="checkbox" id="setEnabled" />
+            <span>투표 목록에 표시</span>
+          </label>
+        </div>
+
+        <button type="button" class="btn" id="setSave">설정 저장</button>
+      </div>
+
+      <div class="card">
+        <h2>비밀번호 변경</h2>
+        <p class="hint">최초 로그인 후에는 반드시 비밀번호를 변경하세요. 8자 이상이어야 합니다.</p>
+        <form id="pwForm" autocomplete="off">
+          <input type="text" id="pwAdminId" name="username" autocomplete="username"
+                 class="sr-only" tabindex="-1" aria-hidden="true" />
+          <div class="field">
+            <label for="pwCurrent">현재 비밀번호</label>
+            <input type="password" id="pwCurrent" autocomplete="current-password" required />
+          </div>
+          <div class="field">
+            <label for="pwNew">새 비밀번호</label>
+            <input type="password" id="pwNew" autocomplete="new-password" minlength="8" required />
+          </div>
+          <div class="field">
+            <label for="pwConfirm">새 비밀번호 확인</label>
+            <input type="password" id="pwConfirm" autocomplete="new-password" minlength="8" required />
+          </div>
+          <button type="submit" class="btn" id="pwSubmit">비밀번호 변경</button>
+        </form>
+      </div>
+
+      <div class="card" id="dangerCard" hidden>
+        <h2 style="color: var(--danger)">투표 초기화</h2>
+        <p class="hint">
+          현재 선택한 투표의 기록을 삭제하고 해당 투표의 발급 코드를 미사용 상태로 되돌립니다.
+          후보와 코드 자체는 유지됩니다. <b>되돌릴 수 없습니다.</b>
+        </p>
+        <button type="button" class="btn btn-danger" id="resetBtn">투표 기록 초기화</button>
+      </div>
+    </section>
+
+    <!-- ========== 작업 로그 ========== -->
+    <section class="panel" id="panel-audit" hidden>
+      <div class="card">
+        <div class="toolbar">
+          <h2 class="mb-0" style="margin:0">관리자 작업 로그</h2>
+          <span class="grow"></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="auditRefresh">새로고침</button>
+        </div>
+        <div class="table-scroll">
+          <table class="data">
+            <thead>
+              <tr>
+                <th style="width:170px">시간</th>
+                <th style="width:110px">관리자</th>
+                <th style="width:180px">Action</th>
+                <th>상세</th>
+              </tr>
+            </thead>
+            <tbody id="auditTbody"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="auditEmpty" hidden>기록이 없습니다.</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="busy" id="busy" hidden>처리 중…</div>
+
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/admin-dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>투표 결과</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <main class="wrap mobile-wrap">
+    <header class="page-head mobile-head">
+      <div>
+        <h1 id="resultTitle">투표 결과</h1>
+        <p class="sub" id="resultStatus">불러오는 중…</p>
+      </div>
+      <a class="link" id="voteLink" href="index.html">← 투표하기</a>
+    </header>
+
+    <div class="alert" id="globalAlert" hidden></div>
+
+    <section class="card" id="pollListCard" hidden>
+      <h2>결과를 볼 투표를 선택하세요</h2>
+      <div class="poll-list" id="resultPollList"></div>
+    </section>
+
+    <section class="card" id="resultCard" hidden>
+      <button type="button" class="back-link" id="resultBackBtn">← 투표 목록</button>
+      <div class="stat-grid" style="margin-bottom: 22px;">
+        <div class="stat"><div class="s-label">총 투표수</div><div class="s-value" id="statTotal">0</div></div>
+        <div class="stat"><div class="s-label">후보 수</div><div class="s-value" id="statCandidates">0</div></div>
+        <div class="stat"><div class="s-label">1위</div><div class="s-value" id="statTop" style="font-size:18px">-</div></div>
+      </div>
+      <div class="result-list" id="resultList"></div>
+      <div class="divider"></div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-ghost btn-sm" id="refreshBtn">새로고침</button>
+        <span class="small muted" id="updatedAt" style="align-self:center"></span>
+      </div>
+    </section>
+
+    <section class="card center" id="hiddenCard" hidden>
+      <button type="button" class="back-link" id="hiddenBackBtn">← 투표 목록</button>
+      <h2 class="mt-0" id="hiddenTitle">결과가 공개되지 않았습니다</h2>
+      <p class="hint" id="hiddenDetail">관리자가 결과를 공개하면 이곳에서 확인할 수 있습니다.</p>
+      <button type="button" class="btn btn-ghost btn-sm" id="hiddenRefreshBtn">다시 확인</button>
+    </section>
+
+    <p class="foot"><a class="link" href="admin/login.html">관리자</a></p>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/result.js"></script>
+</body>
+</html>

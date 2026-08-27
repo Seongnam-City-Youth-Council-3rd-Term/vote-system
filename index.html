@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>투표 목록</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <main class="wrap mobile-wrap">
+    <header class="page-head mobile-head">
+      <div>
+        <h1 id="voteTitle">투표 목록</h1>
+        <p class="sub" id="voteStatus">불러오는 중…</p>
+      </div>
+      <a class="link" id="resultLink" href="result.html">결과 보기 →</a>
+    </header>
+
+    <div class="alert" id="globalAlert" hidden></div>
+
+    <section class="card" id="stepPolls" hidden>
+      <h2>참여할 투표를 선택하세요</h2>
+      <p class="hint">진행 중인 투표는 바로 참여할 수 있습니다.</p>
+      <div class="poll-list" id="pollList"></div>
+    </section>
+
+    <section class="card" id="stepCode" hidden>
+      <button type="button" class="back-link" id="codePollBack">← 투표 목록</button>
+      <h2>투표 코드 입력</h2>
+      <p class="hint">발급받은 1회용 코드를 입력해 주세요. 코드는 한 번만 사용할 수 있습니다.</p>
+
+      <form id="codeForm" autocomplete="off">
+        <div class="field">
+          <label for="voteCode">투표 코드</label>
+          <input type="text" id="voteCode" class="code-input" maxlength="16"
+                 placeholder="A7F2K1" inputmode="latin" autocapitalize="characters"
+                 spellcheck="false" required />
+        </div>
+        <button type="submit" class="btn btn-block btn-lg" id="codeSubmit">다음</button>
+      </form>
+    </section>
+
+    <section class="card" id="stepSelect" hidden>
+      <button type="button" class="back-link" id="selectBackBtn">← 이전</button>
+      <h2>후보 선택</h2>
+      <p class="hint" id="selectHint">한 명만 선택할 수 있습니다.</p>
+      <div class="candidate-list" id="candidateList"></div>
+      <button type="button" class="btn btn-block btn-lg sticky-action" id="submitBtn" disabled>투표하기</button>
+    </section>
+
+    <section class="card center" id="stepDone" hidden>
+      <div class="done-icon" aria-hidden="true">✓</div>
+      <h2 class="mt-0">투표가 완료되었습니다</h2>
+      <p class="hint" id="doneDetail"></p>
+      <div class="btn-stack">
+        <a class="btn btn-block" id="doneResultLink" href="result.html">결과 보기</a>
+        <button type="button" class="btn btn-ghost btn-block" id="againBtn">한 번 더 투표</button>
+        <button type="button" class="btn btn-ghost btn-block" id="donePollsBtn">다른 투표 선택</button>
+      </div>
+    </section>
+
+    <section class="card center" id="stepClosed" hidden>
+      <h2 class="mt-0" id="closedTitle">투표가 진행 중이 아닙니다</h2>
+      <p class="hint" id="closedDetail">투표 시작 후 다시 방문해 주세요.</p>
+      <button type="button" class="btn btn-ghost btn-block" id="closedBackBtn">투표 목록으로</button>
+    </section>
+
+    <p class="foot"><a class="link" href="admin/login.html">관리자</a></p>
+  </main>
+
+  <div class="busy" id="busy" hidden>처리 중…</div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/vote.js"></script>
+</body>
+</html>

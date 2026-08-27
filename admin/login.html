@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>관리자 로그인</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+  <main class="wrap" style="max-width: 420px; padding-top: 64px;">
+    <header class="page-head" style="display:block; text-align:center;">
+      <h1>관리자 로그인</h1>
+      <p class="sub">투표 시스템 관리 콘솔</p>
+    </header>
+
+    <div class="alert" id="globalAlert" hidden></div>
+
+    <section class="card">
+      <form id="loginForm" autocomplete="on">
+        <div class="field">
+          <label for="adminId">아이디</label>
+          <input type="text" id="adminId" name="username" autocomplete="username"
+                 spellcheck="false" autocapitalize="off" required />
+        </div>
+        <div class="field">
+          <label for="adminPw">비밀번호</label>
+          <input type="password" id="adminPw" name="password" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn btn-block" id="loginBtn">로그인</button>
+      </form>
+    </section>
+
+    <p class="foot">
+      <a class="link" href="../index.html">← 투표 페이지로</a>
+    </p>
+  </main>
+
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/admin-login.js"></script>
+</body>
+</html>
