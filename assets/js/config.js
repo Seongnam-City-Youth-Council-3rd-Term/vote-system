@@ -8,7 +8,7 @@
  * 이 URL 은 비밀값이 아니다. 공개되어도 관리자 기능은 토큰 없이는 동작하지 않는다.
  */
 window.VOTE_CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbwjJXSssvMPEH6PoI33NbGgyp212MhHiVkQnOSXPRLUQ4knyt84iM15OUn2b5NUo9nb/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbyV-qYR9BwzdHAgu7_L7Ja66QaIIWN8QkXe05IpVfttovy2Ws3Ve_2M5OWuaqQhljiz/exec',
 
   /** 관리자 세션 토큰을 보관할 sessionStorage 키 */
   TOKEN_KEY: 'vote_admin_token',
