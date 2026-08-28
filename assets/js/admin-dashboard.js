@@ -330,11 +330,10 @@
   }
 
   function editCandidate(item) {
-    var major = window.prompt('대주제', item.majorTopic); if (major === null || !major.trim()) return;
     var middle = window.prompt('중주제', item.middleTopic); if (middle === null || !middle.trim()) return;
     var sub = window.prompt('소주제', item.subTopic); if (sub === null || !sub.trim()) return;
     UI.show(busy, true);
-    API.callAdmin('updateQuestion', pollPayload({ id: item.id, majorTopic: major.trim(), middleTopic: middle.trim(), subTopic: sub.trim() }))
+    API.callAdmin('updateQuestion', pollPayload({ id: item.id, middleTopic: middle.trim(), subTopic: sub.trim() }))
       .then(function () { notify('투표 내용을 수정했습니다.', 'good'); return loadCandidates(); })
       .catch(fail)
       .then(function () { UI.show(busy, false); });
@@ -343,10 +342,10 @@
   $('#candidateForm').addEventListener('submit', function (event) {
     event.preventDefault();
     if (!requirePoll()) return;
-    var major = $('#candName').value.trim(), middle = $('#candMiddle').value.trim(), sub = $('#candDesc').value.trim();
-    if (!major || !middle || !sub) return notify('대주제, 중주제, 소주제를 모두 입력해 주세요.', 'warn');
+    var middle = $('#candMiddle').value.trim(), sub = $('#candDesc').value.trim();
+    if (!middle || !sub) return notify('중주제와 소주제를 모두 입력해 주세요.', 'warn');
     var restore = UI.busyButton($('#candSubmit'), '추가 중…');
-    API.callAdmin('createQuestion', pollPayload({ majorTopic: major, middleTopic: middle, subTopic: sub }))
+    API.callAdmin('createQuestion', pollPayload({ middleTopic: middle, subTopic: sub }))
       .then(function () {
         $('#candidateForm').reset();
         notify('투표 내용을 추가했습니다.', 'good');
@@ -354,14 +353,6 @@
       })
       .catch(fail)
       .then(restore);
-  });
-
-  $('#seedQuestionsBtn').addEventListener('click', function () {
-    if (!requirePoll() || !window.confirm('계획서의 테스트 투표 내용 30개를 추가할까요?\n현재 투표 내용이 비어 있을 때만 가능합니다.')) return;
-    var restore = UI.busyButton(this, '추가 중…');
-    API.callAdmin('seedQuestions', { pollId: state.pollId }).then(function (data) {
-      notify(data.count + '개의 테스트 투표 내용을 추가했습니다.', 'good'); return loadCandidates();
-    }).catch(fail).then(restore);
   });
 
   $('#candRefresh').addEventListener('click', function () {
