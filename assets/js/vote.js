@@ -13,7 +13,7 @@
   function top() { window.scrollTo(0, 0); }
   function showPolls() {
     state.poll = null; state.questions = []; state.code = ''; state.middle = ''; state.question = null; state.answer = '';
-    document.title = '대주제 선택'; els.title.textContent = '대주제 선택'; els.status.textContent = state.polls.length + '개의 대주제';
+    document.title = '투표 선택'; els.title.textContent = '투표 선택'; els.status.textContent = state.polls.length + '개의 투표';
     els.resultLink.href = 'result.html'; UI.notify(els.alert, ''); step('polls'); top();
   }
   function showClosed(title, detail) { els.closedTitle.textContent = title; els.closedDetail.textContent = detail; step('closed'); top(); }
@@ -42,7 +42,7 @@
       state.poll = data.poll; state.questions = data.questions || []; state.code = ''; state.middle = ''; state.question = null;
       document.title = data.title || '투표'; els.title.textContent = data.title || '투표'; els.status.textContent = data.voteOpen ? '중주제를 선택하세요' : '투표 종료';
       els.resultLink.href = els.doneResultLink.href = 'result.html?poll=' + encodeURIComponent(state.poll.id);
-      if (!data.voteOpen) return showClosed('투표가 진행 중이 아닙니다', '다른 대주제를 선택하거나 투표 시작 후 다시 확인해 주세요.');
+      if (!data.voteOpen) return showClosed('투표가 진행 중이 아닙니다', '다른 투표를 선택하거나 투표 시작 후 다시 확인해 주세요.');
       if (!state.questions.length) return showClosed('등록된 소주제 투표가 없습니다', '관리자가 중주제와 소주제를 등록하면 참여할 수 있습니다.');
       if (data.requireCode) { els.codeInput.value = ''; step('code'); setTimeout(function () { els.codeInput.focus(); }, 0); }
       else { renderMiddles(); step('select'); } top();
@@ -50,7 +50,7 @@
   }
   function renderMiddles() {
     state.middle = ''; state.question = null; state.answer = ''; UI.clear(els.list); UI.show(els.submitBtn, false);
-    els.selectHint.textContent = state.poll.title + ' 대주제의 중주제를 선택하세요.'; els.selectBackBtn.textContent = '← 대주제 선택';
+    els.selectHint.textContent = state.poll.title + '의 항목을 선택하세요.'; els.selectBackBtn.textContent = '← 투표 선택';
     var seen = {};
     state.questions.forEach(function (q) { if (seen[q.middleTopic]) return; seen[q.middleTopic] = true;
       els.list.appendChild(itemButton(q.middleTopic, '', function () { renderSubs(q.middleTopic); })); });
@@ -66,7 +66,7 @@
     state.question = question; state.answer = ''; UI.clear(els.list); UI.show(els.submitBtn, true); els.submitBtn.disabled = true;
     els.selectBackBtn.textContent = '← 소주제 선택'; els.selectHint.textContent = state.poll.title + ' › ' + question.middleTopic;
     var card = UI.el('fieldset', 'question-card'); card.appendChild(UI.el('legend', null, question.subTopic)); var choices = UI.el('div', 'answer-choices');
-    ['예', '아니오'].forEach(function (answer) { var label = UI.el('label', 'answer-choice'), radio = document.createElement('input');
+    (question.options || []).forEach(function (answer) { var label = UI.el('label', 'answer-choice'), radio = document.createElement('input');
       radio.type = 'radio'; radio.name = 'answer'; radio.value = answer; label.appendChild(radio); label.appendChild(document.createTextNode(answer));
       radio.addEventListener('change', function () { state.answer = answer; els.submitBtn.disabled = false; }); choices.appendChild(label); });
     card.appendChild(choices); els.list.appendChild(card); top();

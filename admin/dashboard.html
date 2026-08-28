@@ -111,7 +111,7 @@
     <section class="panel" id="panel-candidates" hidden>
       <div class="card">
         <h2>투표 내용 추가</h2>
-        <p class="hint">현재 선택한 대주제 아래에 중주제와 소주제 투표를 등록합니다. 선택지는 예/아니오로 고정됩니다.</p>
+        <p class="hint">현재 선택한 대주제 아래에 중주제와 소주제 투표를 등록합니다. 선택지는 투표마다 자유롭게 정하고 줄바꿈으로 구분합니다.</p>
         <form id="candidateForm" autocomplete="off">
           <div class="field">
             <label for="candMiddle">중주제</label>
@@ -120,6 +120,10 @@
           <div class="field">
             <label for="candDesc">소주제</label>
             <textarea id="candDesc" maxlength="300" rows="3" required></textarea>
+          </div>
+          <div class="field">
+            <label for="candOptions">선택지 (한 줄에 하나씩, 2~10개)</label>
+            <textarea id="candOptions" maxlength="500" rows="4" placeholder="예&#10;아니오" required></textarea>
           </div>
           <div class="btn-row">
             <button type="submit" class="btn" id="candSubmit">투표 내용 추가</button>
@@ -138,7 +142,7 @@
             <thead>
               <tr>
                 <th>대주제 / 중주제 / 소주제</th>
-                <th style="width:110px">예 / 아니오</th>
+                <th style="width:220px">선택지별 득표</th>
                 <th style="width:90px">상태</th>
                 <th style="width:150px">관리</th>
               </tr>

@@ -252,21 +252,16 @@
     if (!items || items.length === 0) return list.appendChild(UI.el('div', 'empty', '등록된 투표 내용이 없습니다.'));
     items.forEach(function (item) {
       var row = UI.el('div', 'result-row');
-      var head = UI.el('div', 'r-head');
       var name = UI.el('div', 'r-name', item.majorTopic + ' › ' + item.middleTopic + ' › ' + item.subTopic);
       if (!item.enabled) name.appendChild(UI.el('span', 'badge inline-badge', '비활성'));
-      head.appendChild(name);
-      var count = UI.el('div', 'r-count');
-      count.appendChild(UI.el('b', null, '예 ' + UI.formatNumber(item.yesCount)));
-      count.appendChild(document.createTextNode(' · 아니오 ' + UI.formatNumber(item.noCount) + ' · 예 ' + item.yesPercent + '%'));
-      head.appendChild(count);
-      var bar = UI.el('div', 'bar');
-      var fill = UI.el('span');
-      bar.appendChild(fill);
-      row.appendChild(head);
-      row.appendChild(bar);
+      row.appendChild(name);
+      (item.optionResults || []).forEach(function (result) {
+        var head = UI.el('div', 'r-head option-result-head'); head.appendChild(UI.el('span', null, result.option));
+        head.appendChild(UI.el('span', 'r-count', UI.formatNumber(result.count) + '표 · ' + result.percent + '%'));
+        var bar = UI.el('div', 'bar'), fill = UI.el('span'); bar.appendChild(fill); row.appendChild(head); row.appendChild(bar);
+        requestAnimationFrame(function () { fill.style.width = (result.count ? Math.max(result.percent, 1.5) : 0) + '%'; });
+      });
       list.appendChild(row);
-      requestAnimationFrame(function () { fill.style.width = (item.yesCount ? Math.max(item.yesPercent, 1.5) : 0) + '%'; });
     });
   }
 
@@ -298,7 +293,9 @@
     nameCell.appendChild(UI.el('div', null, item.majorTopic + ' › ' + item.middleTopic));
     nameCell.appendChild(UI.el('div', 'small muted pre-wrap', item.subTopic));
     tr.appendChild(nameCell);
-    tr.appendChild(UI.el('td', 'num', UI.formatNumber(item.yesCount) + ' / ' + UI.formatNumber(item.noCount)));
+    tr.appendChild(UI.el('td', 'small', (item.optionResults || []).map(function (result) {
+      return result.option + ' ' + UI.formatNumber(result.count);
+    }).join(' / ')));
     var stateCell = UI.el('td');
     stateCell.appendChild(UI.el('span', 'badge ' + (item.enabled ? 'badge-good' : ''), item.enabled ? '활성' : '비활성'));
     tr.appendChild(stateCell);
@@ -332,8 +329,10 @@
   function editCandidate(item) {
     var middle = window.prompt('중주제', item.middleTopic); if (middle === null || !middle.trim()) return;
     var sub = window.prompt('소주제', item.subTopic); if (sub === null || !sub.trim()) return;
+    var options = window.prompt('선택지 (한 줄에 하나씩)', (item.options || []).join('\n'));
+    if (options === null || options.split(/\r?\n/).filter(function (value) { return value.trim(); }).length < 2) return;
     UI.show(busy, true);
-    API.callAdmin('updateQuestion', pollPayload({ id: item.id, middleTopic: middle.trim(), subTopic: sub.trim() }))
+    API.callAdmin('updateQuestion', pollPayload({ id: item.id, middleTopic: middle.trim(), subTopic: sub.trim(), options: options }))
       .then(function () { notify('투표 내용을 수정했습니다.', 'good'); return loadCandidates(); })
       .catch(fail)
       .then(function () { UI.show(busy, false); });
@@ -342,10 +341,10 @@
   $('#candidateForm').addEventListener('submit', function (event) {
     event.preventDefault();
     if (!requirePoll()) return;
-    var middle = $('#candMiddle').value.trim(), sub = $('#candDesc').value.trim();
-    if (!middle || !sub) return notify('중주제와 소주제를 모두 입력해 주세요.', 'warn');
+    var middle = $('#candMiddle').value.trim(), sub = $('#candDesc').value.trim(), options = $('#candOptions').value.trim();
+    if (!middle || !sub || !options) return notify('중주제, 소주제, 선택지를 모두 입력해 주세요.', 'warn');
     var restore = UI.busyButton($('#candSubmit'), '추가 중…');
-    API.callAdmin('createQuestion', pollPayload({ middleTopic: middle, subTopic: sub }))
+    API.callAdmin('createQuestion', pollPayload({ middleTopic: middle, subTopic: sub, options: options }))
       .then(function () {
         $('#candidateForm').reset();
         notify('투표 내용을 추가했습니다.', 'good');

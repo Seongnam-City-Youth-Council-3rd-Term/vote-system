@@ -71,19 +71,14 @@
     if (items.length === 0) els.list.appendChild(UI.el('div', 'empty', '등록된 투표 내용이 없습니다.'));
     items.forEach(function (item) {
       var row = UI.el('div', 'result-row');
-      var head = UI.el('div', 'r-head');
-      head.appendChild(UI.el('div', 'r-name', item.majorTopic + ' › ' + item.middleTopic + ' › ' + item.subTopic));
-      var count = UI.el('div', 'r-count');
-      count.appendChild(UI.el('b', null, '예 ' + UI.formatNumber(item.yesCount)));
-      count.appendChild(document.createTextNode(' · 아니오 ' + UI.formatNumber(item.noCount) + ' · 예 ' + item.yesPercent + '%'));
-      head.appendChild(count);
-      var bar = UI.el('div', 'bar');
-      var fill = UI.el('span');
-      bar.appendChild(fill);
-      row.appendChild(head);
-      row.appendChild(bar);
+      row.appendChild(UI.el('div', 'r-name', item.majorTopic + ' › ' + item.middleTopic + ' › ' + item.subTopic));
+      (item.optionResults || []).forEach(function (result) {
+        var head = UI.el('div', 'r-head option-result-head'); head.appendChild(UI.el('span', null, result.option));
+        head.appendChild(UI.el('span', 'r-count', UI.formatNumber(result.count) + '표 · ' + result.percent + '%'));
+        var bar = UI.el('div', 'bar'), fill = UI.el('span'); bar.appendChild(fill); row.appendChild(head); row.appendChild(bar);
+        requestAnimationFrame(function () { fill.style.width = (result.count ? Math.max(result.percent, 1.5) : 0) + '%'; });
+      });
       els.list.appendChild(row);
-      requestAnimationFrame(function () { fill.style.width = (item.yesCount === 0 ? 0 : Math.max(item.yesPercent, 1.5)) + '%'; });
     });
 
     els.updatedAt.textContent = '갱신 ' + UI.formatDateTime(new Date().toISOString());

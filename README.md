@@ -11,7 +11,7 @@ GitHub Pages (정적 UI)  →  Apps Script Web App (API/인증/검증)  →  Goo
 
 | 경로 | 설명 |
 |---|---|
-| `index.html` | 대주제 → 중주제 → 소주제 선택 → 해당 항목 예/아니오 투표 |
+| `index.html` | 대주제 → 중주제 → 소주제 선택 → 등록된 선택지 중 하나에 투표 |
 | `result.html` | 투표별 결과 집계 (관리자가 공개했을 때) |
 | `admin/login.html` | 관리자 로그인 |
 | `admin/dashboard.html` | 집계 · 투표 내용 관리 · 코드 발급 · 설정 · 작업 로그 |
