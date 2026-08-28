@@ -22,7 +22,7 @@
     if (detail) button.appendChild(UI.el('p', 'poll-description', detail)); button.addEventListener('click', click); return button;
   }
   function renderPolls() {
-    UI.clear(els.pollList); if (!state.polls.length) return els.pollList.appendChild(UI.el('div', 'empty', '등록된 대주제가 없습니다.'));
+    UI.clear(els.pollList); if (!state.polls.length) return els.pollList.appendChild(UI.el('div', 'empty', '등록된 투표가 없습니다.'));
     state.polls.forEach(function (poll) {
       var button = itemButton(poll.title, poll.description, function () { selectPoll(poll.id); });
       var badge = UI.el('span', 'badge ' + (poll.voteOpen ? 'badge-good' : 'badge-warn'), poll.voteOpen ? '진행 중' : '종료');
