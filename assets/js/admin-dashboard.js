@@ -1,4 +1,4 @@
-/** admin/dashboard.html — 다중 투표 / 집계 / 후보 / 코드 / 설정 / 로그 */
+/** admin/dashboard.html — 다중 투표 / 집계 / 계층형 투표 내용 / 코드 / 설정 / 로그 */
 (function () {
   'use strict';
 
@@ -136,7 +136,7 @@
       body.appendChild(head);
       if (poll.description) body.appendChild(UI.el('p', 'poll-description', poll.description));
       body.appendChild(UI.el('div', 'small muted',
-        '후보 ' + poll.candidateCount + ' · 투표 ' + poll.totalVotes + ' · 코드 ' + poll.codeCount +
+        '투표 항목 ' + poll.questionCount + ' · 참여 ' + poll.totalVotes + '명 · 코드 ' + poll.codeCount +
         ' · ' + (poll.requireCode ? '코드 사용' : '반복 허용')));
 
       var actions = UI.el('div', 'btn-row');
@@ -249,17 +249,16 @@
   function renderTally(items) {
     var list = $('#ovList');
     UI.clear(list);
-    if (!items || items.length === 0) return list.appendChild(UI.el('div', 'empty', '등록된 후보가 없습니다.'));
-    var topCount = items[0].count;
+    if (!items || items.length === 0) return list.appendChild(UI.el('div', 'empty', '등록된 투표 내용이 없습니다.'));
     items.forEach(function (item) {
-      var row = UI.el('div', 'result-row' + (topCount > 0 && item.count === topCount ? ' top' : ''));
+      var row = UI.el('div', 'result-row');
       var head = UI.el('div', 'r-head');
-      var name = UI.el('div', 'r-name', item.name);
+      var name = UI.el('div', 'r-name', item.majorTopic + ' › ' + item.middleTopic + ' › ' + item.subTopic);
       if (!item.enabled) name.appendChild(UI.el('span', 'badge inline-badge', '비활성'));
       head.appendChild(name);
       var count = UI.el('div', 'r-count');
-      count.appendChild(UI.el('b', null, UI.formatNumber(item.count)));
-      count.appendChild(document.createTextNode('표 · ' + item.percent + '%'));
+      count.appendChild(UI.el('b', null, '예 ' + UI.formatNumber(item.yesCount)));
+      count.appendChild(document.createTextNode(' · 아니오 ' + UI.formatNumber(item.noCount) + ' · 예 ' + item.yesPercent + '%'));
       head.appendChild(count);
       var bar = UI.el('div', 'bar');
       var fill = UI.el('span');
@@ -267,7 +266,7 @@
       row.appendChild(head);
       row.appendChild(bar);
       list.appendChild(row);
-      requestAnimationFrame(function () { fill.style.width = (item.count ? Math.max(item.percent, 1.5) : 0) + '%'; });
+      requestAnimationFrame(function () { fill.style.width = (item.yesCount ? Math.max(item.yesPercent, 1.5) : 0) + '%'; });
     });
   }
 
@@ -277,12 +276,12 @@
   });
 
   // ==========================================================
-  // 후보 관리
+  // 투표 내용 관리
   // ==========================================================
 
   function loadCandidates() {
     if (!requirePoll()) return Promise.resolve();
-    return API.callAdmin('listCandidates', { pollId: state.pollId })
+    return API.callAdmin('listQuestions', { pollId: state.pollId })
       .then(function (data) {
         var tbody = $('#candTbody');
         UI.clear(tbody);
@@ -295,12 +294,11 @@
 
   function candidateRow(item) {
     var tr = document.createElement('tr');
-    tr.appendChild(UI.el('td', 'mono', item.id));
     var nameCell = UI.el('td');
-    nameCell.appendChild(UI.el('div', null, item.name));
-    if (item.description) nameCell.appendChild(UI.el('div', 'small muted pre-wrap', item.description));
+    nameCell.appendChild(UI.el('div', null, item.majorTopic + ' › ' + item.middleTopic));
+    nameCell.appendChild(UI.el('div', 'small muted pre-wrap', item.subTopic));
     tr.appendChild(nameCell);
-    tr.appendChild(UI.el('td', 'num', UI.formatNumber(item.count)));
+    tr.appendChild(UI.el('td', 'num', UI.formatNumber(item.yesCount) + ' / ' + UI.formatNumber(item.noCount)));
     var stateCell = UI.el('td');
     stateCell.appendChild(UI.el('span', 'badge ' + (item.enabled ? 'badge-good' : ''), item.enabled ? '활성' : '비활성'));
     tr.appendChild(stateCell);
@@ -313,17 +311,17 @@
     var toggleBtn = UI.el('button', 'btn btn-ghost btn-sm', item.enabled ? '비활성' : '활성');
     toggleBtn.type = 'button';
     toggleBtn.addEventListener('click', function () {
-      API.callAdmin('updateCandidate', pollPayload({ id: item.id, enabled: !item.enabled }))
-        .then(function () { notify('후보 상태를 변경했습니다.', 'good'); return loadCandidates(); })
+      API.callAdmin('updateQuestion', pollPayload({ id: item.id, enabled: !item.enabled }))
+        .then(function () { notify('투표 내용 상태를 변경했습니다.', 'good'); return loadCandidates(); })
         .catch(fail);
     });
     var deleteBtn = UI.el('button', 'btn btn-ghost btn-sm', '삭제');
     deleteBtn.type = 'button';
     deleteBtn.style.color = 'var(--danger)';
     deleteBtn.addEventListener('click', function () {
-      if (!window.confirm('"' + item.name + '" 후보를 삭제할까요?')) return;
-      API.callAdmin('deleteCandidate', pollPayload({ id: item.id }))
-        .then(function () { notify('후보를 삭제했습니다.', 'good'); return loadCandidates(); })
+      if (!window.confirm('이 투표 내용을 삭제할까요?')) return;
+      API.callAdmin('deleteQuestion', pollPayload({ id: item.id }))
+        .then(function () { notify('투표 내용을 삭제했습니다.', 'good'); return loadCandidates(); })
         .catch(fail);
     });
     row.appendChild(editBtn); row.appendChild(toggleBtn); row.appendChild(deleteBtn);
@@ -332,13 +330,12 @@
   }
 
   function editCandidate(item) {
-    var name = window.prompt('후보명', item.name);
-    if (name === null || !name.trim()) return;
-    var description = window.prompt('설명 (비워 두면 삭제됩니다)', item.description || '');
-    if (description === null) return;
+    var major = window.prompt('대주제', item.majorTopic); if (major === null || !major.trim()) return;
+    var middle = window.prompt('중주제', item.middleTopic); if (middle === null || !middle.trim()) return;
+    var sub = window.prompt('소주제', item.subTopic); if (sub === null || !sub.trim()) return;
     UI.show(busy, true);
-    API.callAdmin('updateCandidate', pollPayload({ id: item.id, name: name.trim(), description: description }))
-      .then(function () { notify('후보 정보를 수정했습니다.', 'good'); return loadCandidates(); })
+    API.callAdmin('updateQuestion', pollPayload({ id: item.id, majorTopic: major.trim(), middleTopic: middle.trim(), subTopic: sub.trim() }))
+      .then(function () { notify('투표 내용을 수정했습니다.', 'good'); return loadCandidates(); })
       .catch(fail)
       .then(function () { UI.show(busy, false); });
   }
@@ -346,17 +343,25 @@
   $('#candidateForm').addEventListener('submit', function (event) {
     event.preventDefault();
     if (!requirePoll()) return;
-    var name = $('#candName').value.trim();
-    if (!name) return notify('후보명을 입력해 주세요.', 'warn');
+    var major = $('#candName').value.trim(), middle = $('#candMiddle').value.trim(), sub = $('#candDesc').value.trim();
+    if (!major || !middle || !sub) return notify('대주제, 중주제, 소주제를 모두 입력해 주세요.', 'warn');
     var restore = UI.busyButton($('#candSubmit'), '추가 중…');
-    API.callAdmin('createCandidate', pollPayload({ name: name, description: $('#candDesc').value.trim() }))
+    API.callAdmin('createQuestion', pollPayload({ majorTopic: major, middleTopic: middle, subTopic: sub }))
       .then(function () {
         $('#candidateForm').reset();
-        notify('후보를 추가했습니다.', 'good');
+        notify('투표 내용을 추가했습니다.', 'good');
         return loadCandidates();
       })
       .catch(fail)
       .then(restore);
+  });
+
+  $('#seedQuestionsBtn').addEventListener('click', function () {
+    if (!requirePoll() || !window.confirm('계획서의 테스트 투표 내용 30개를 추가할까요?\n현재 투표 내용이 비어 있을 때만 가능합니다.')) return;
+    var restore = UI.busyButton(this, '추가 중…');
+    API.callAdmin('seedQuestions', { pollId: state.pollId }).then(function (data) {
+      notify(data.count + '개의 테스트 투표 내용을 추가했습니다.', 'good'); return loadCandidates();
+    }).catch(fail).then(restore);
   });
 
   $('#candRefresh').addEventListener('click', function () {
@@ -399,7 +404,7 @@
       stateCell.appendChild(UI.el('span', 'badge ' + (item.used ? '' : 'badge-good'), item.used ? '사용됨' : '미사용'));
       tr.appendChild(stateCell);
       tr.appendChild(UI.el('td', 'small muted', item.used ? UI.formatDateTime(item.usedAt) : '-'));
-      tr.appendChild(UI.el('td', null, item.usedCandidateName || (item.used ? '(삭제된 후보)' : '-')));
+      tr.appendChild(UI.el('td', null, item.used ? UI.formatNumber(item.usedAnswerCount) + '개' : '-'));
       tbody.appendChild(tr);
     });
   }

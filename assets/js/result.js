@@ -65,19 +65,17 @@
     els.statTotal.textContent = UI.formatNumber(total);
     els.statCandidates.textContent = UI.formatNumber(items.length);
 
-    var topCount = items.length > 0 ? items[0].count : 0;
-    var winners = items.filter(function (item) { return item.count === topCount && topCount > 0; });
-    els.statTop.textContent = winners.length === 0 ? '-' : (winners.length > 1 ? winners.length + '명 동점' : winners[0].name);
+    els.statTop.textContent = UI.formatNumber(data.totalAnswers || 0);
 
     UI.clear(els.list);
-    if (items.length === 0) els.list.appendChild(UI.el('div', 'empty', '등록된 후보가 없습니다.'));
+    if (items.length === 0) els.list.appendChild(UI.el('div', 'empty', '등록된 투표 내용이 없습니다.'));
     items.forEach(function (item) {
-      var row = UI.el('div', 'result-row' + (topCount > 0 && item.count === topCount ? ' top' : ''));
+      var row = UI.el('div', 'result-row');
       var head = UI.el('div', 'r-head');
-      head.appendChild(UI.el('div', 'r-name', item.name));
+      head.appendChild(UI.el('div', 'r-name', item.majorTopic + ' › ' + item.middleTopic + ' › ' + item.subTopic));
       var count = UI.el('div', 'r-count');
-      count.appendChild(UI.el('b', null, UI.formatNumber(item.count)));
-      count.appendChild(document.createTextNode('표 · ' + item.percent + '%'));
+      count.appendChild(UI.el('b', null, '예 ' + UI.formatNumber(item.yesCount)));
+      count.appendChild(document.createTextNode(' · 아니오 ' + UI.formatNumber(item.noCount) + ' · 예 ' + item.yesPercent + '%'));
       head.appendChild(count);
       var bar = UI.el('div', 'bar');
       var fill = UI.el('span');
@@ -85,7 +83,7 @@
       row.appendChild(head);
       row.appendChild(bar);
       els.list.appendChild(row);
-      requestAnimationFrame(function () { fill.style.width = (item.count === 0 ? 0 : Math.max(item.percent, 1.5)) + '%'; });
+      requestAnimationFrame(function () { fill.style.width = (item.yesCount === 0 ? 0 : Math.max(item.yesPercent, 1.5)) + '%'; });
     });
 
     els.updatedAt.textContent = '갱신 ' + UI.formatDateTime(new Date().toISOString());
